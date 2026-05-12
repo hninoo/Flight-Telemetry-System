@@ -16,7 +16,7 @@ return [
                 'port' => env('REVERB_PORT', 8080),
                 'scheme' => env('REVERB_SCHEME', 'http'),
                 'useTLS' => env('REVERB_SCHEME', 'http') === 'https',
-            ]
+            ],
         ],
 
         'log' => [

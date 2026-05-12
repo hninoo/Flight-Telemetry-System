@@ -10,7 +10,6 @@ use App\Services\Monitor;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Log;
 use RuntimeException;
 use Swoole\Runtime;
 
@@ -49,7 +48,6 @@ class StartTelemetry extends Command
         $memoryMb = $this->option('memory') !== null
             ? (int) $this->option('memory')
             : (int) config('telemetry.memory_limit_mb');
-
 
         try {
             $flights = $directory->all();

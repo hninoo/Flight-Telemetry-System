@@ -85,8 +85,30 @@ The dashboard should show all flights from the upstream API and update telemetry
 Clone the repository:
 
 ```sh
-git clone git@github.com:hninoo/Flight-Telemetry-System.git
+git clone https://github.com/hninoo/Flight-Telemetry-System.git
 cd Flight-Telemetry-System
+```
+
+Create a local environment file before starting Compose:
+
+```sh
+cp .env.example .env
+```
+
+Set a unique `APP_KEY`, `REVERB_APP_ID`, `REVERB_APP_KEY`, and `REVERB_APP_SECRET` in `.env`, and set `VITE_REVERB_APP_KEY` to the same value as `REVERB_APP_KEY`. Do not enable `APP_DEBUG` outside a local reviewer stack.
+
+If port `8000` is already in use, set a different host port in `.env` before starting Compose:
+
+```env
+APP_HOST_PORT=8000
+APP_URL=http://localhost:8000
+```
+
+If port `8080` is already in use, move the Reverb host port as well:
+
+```env
+REVERB_HOST_PORT=8080
+VITE_REVERB_PORT=8080
 ```
 
 Build and start all services:
