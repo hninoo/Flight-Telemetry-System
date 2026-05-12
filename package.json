@@ -1,7 +1,10 @@
 {
     "$schema": "https://www.schemastore.org/package.json",
+    "name": "flight-telemetry-dashboard",
     "private": true,
+    "version": "1.0.0",
     "type": "module",
+    "description": "Real-time flight monitoring dashboard (Vue 3 + Reverb)",
     "scripts": {
         "build": "vite build",
         "build:ssr": "vite build && vite build --ssr",
@@ -37,7 +40,9 @@
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
         "concurrently": "^9.0.1",
+        "laravel-echo": "^1.16.1",
         "laravel-vite-plugin": "^3.1",
+        "pusher-js": "^8.4.0",
         "tailwind-merge": "^3.2.0",
         "tailwindcss": "^4.1.1",
         "typescript": "^5.2.2",

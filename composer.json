@@ -1,20 +1,27 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/blank-vue-starter-kit",
+    "name": "onenex/flight-telemetry",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
+    "description": "Real-time flight telemetry dashboard (Laravel 13 + Octane + Swoole + Reverb).",
     "keywords": [
         "laravel",
-        "framework"
+        "octane",
+        "swoole",
+        "telemetry",
+        "tcp",
+        "reverb",
+        "websocket"
     ],
     "license": "MIT",
     "require": {
         "php": "^8.3",
+        "ext-pcntl": "*",
+        "ext-sockets": "*",
         "inertiajs/inertia-laravel": "^3.0",
-        "laravel/framework": "^13.7",
+        "laravel/framework": "^13.8",
         "laravel/octane": "^2.17",
-        "laravel/tinker": "^3.0",
-        "laravel/wayfinder": "^0.1.14"
+        "laravel/reverb": "^1.0|^2.0",
+        "predis/predis": "^2.2"
     },
     "require-dev": {
         "fakerphp/faker": "^1.24",
@@ -102,5 +109,6 @@
             "php-http/discovery": true
         }
     },
-    "minimum-stability": "stable"
+    "minimum-stability": "stable",
+    "prefer-stable": true
 }

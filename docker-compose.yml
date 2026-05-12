@@ -1,19 +1,140 @@
 services:
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: flight-telemetry
-    ports:
-      - "8000:8000"
-    environment:
-      - APP_ENV=local
-      - APP_DEBUG=true
-      - APP_KEY=
-      - APP_URL=http://localhost:8000
-      - CACHE_STORE=array
-      - QUEUE_CONNECTION=sync
-      - LOG_CHANNEL=stderr
+  redis:
+    image: redis:7-alpine
+    restart: always
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  init-env:
+    build: .
+    image: fts-app:latest
+    restart: "no"
     volumes:
-      - ./storage:/app/storage
-    restart: unless-stopped
+      - runtime-env:/runtime-env
+      - .:/workspace
+    command: sh /app/ensure-env.sh /runtime-env/.env /workspace/.env
+
+  init-deps:
+    build: .
+    image: fts-app:latest
+    restart: "no"
+    volumes:
+      - .:/workspace
+    command: sh /app/ensure-deps.sh /workspace
+    depends_on:
+      init-env:
+        condition: service_completed_successfully
+
+  app:
+    build: .
+    image: fts-app:latest
+    restart: always
+    command: sh -lc "cp /runtime-env/.env .env; php artisan config:clear --no-interaction || true; php artisan route:clear --no-interaction || true; php artisan view:clear --no-interaction || true; echo \"Ready -> http://localhost:${APP_SERVER_PORT:-8000}\"; exec php artisan octane:start --server=${OCTANE_SERVER:-swoole} --host=${APP_SERVER_HOST:-0.0.0.0} --port=${APP_SERVER_PORT:-8000} --workers=${OCTANE_WORKERS:-2}"
+    volumes:
+      - runtime-env:/runtime-env
+    ports:
+      - "${APP_HOST_PORT:-8000}:${APP_SERVER_PORT:-8000}"
+    environment:
+      APP_ENV: "${APP_ENV:-production}"
+      APP_DEBUG: "${APP_DEBUG:-false}"
+      APP_URL: "${APP_URL:-http://localhost:8000}"
+      APP_SERVER_HOST: "${APP_SERVER_HOST:-0.0.0.0}"
+      APP_SERVER_PORT: "${APP_SERVER_PORT:-8000}"
+      VITE_APP_NAME: "${VITE_APP_NAME:-Flight Telemetry}"
+      OCTANE_SERVER: "${OCTANE_SERVER:-swoole}"
+      OCTANE_WORKERS: "${OCTANE_WORKERS:-2}"
+      BROADCAST_CONNECTION: "${BROADCAST_CONNECTION:-reverb}"
+      CACHE_STORE: "${CACHE_STORE:-redis}"
+      QUEUE_CONNECTION: "${QUEUE_CONNECTION:-sync}"
+      SESSION_DRIVER: "${SESSION_DRIVER:-file}"
+      LOG_CHANNEL: "${LOG_CHANNEL:-stderr}"
+      REDIS_CLIENT: "${REDIS_CLIENT:-predis}"
+      REDIS_HOST: "${REDIS_HOST:-redis}"
+      REVERB_SERVER_HOST: "${REVERB_SERVER_HOST:-0.0.0.0}"
+      REVERB_SERVER_PORT: "${REVERB_SERVER_PORT:-8080}"
+      REVERB_HOST: "${REVERB_HOST:-reverb}"
+      REVERB_PORT: "${REVERB_PORT:-8080}"
+      REVERB_SCHEME: "${REVERB_SCHEME:-http}"
+      VITE_REVERB_HOST: "${VITE_REVERB_HOST:-localhost}"
+      VITE_REVERB_PORT: "${VITE_REVERB_PORT:-8080}"
+      VITE_REVERB_SCHEME: "${VITE_REVERB_SCHEME:-http}"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:${APP_SERVER_PORT:-8000}/up"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 20s
+    depends_on:
+      init-env:
+        condition: service_completed_successfully
+      init-deps:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+
+  reverb:
+    image: fts-app:latest
+    restart: always
+    command: sh -lc "cp /runtime-env/.env .env; php artisan reverb:start --host=${REVERB_SERVER_HOST:-0.0.0.0} --port=${REVERB_SERVER_PORT:-8080}"
+    volumes:
+      - runtime-env:/runtime-env
+    ports:
+      - "${REVERB_HOST_PORT:-8080}:${REVERB_SERVER_PORT:-8080}"
+    environment:
+      APP_ENV: "${APP_ENV:-production}"
+      APP_DEBUG: "${APP_DEBUG:-false}"
+      APP_URL: "${APP_URL:-http://localhost:8000}"
+      BROADCAST_CONNECTION: "${BROADCAST_CONNECTION:-reverb}"
+      CACHE_STORE: "${CACHE_STORE:-redis}"
+      LOG_CHANNEL: "${LOG_CHANNEL:-stderr}"
+      REDIS_CLIENT: "${REDIS_CLIENT:-predis}"
+      REDIS_HOST: "${REDIS_HOST:-redis}"
+      REVERB_SERVER_HOST: "${REVERB_SERVER_HOST:-0.0.0.0}"
+      REVERB_SERVER_PORT: "${REVERB_SERVER_PORT:-8080}"
+      REVERB_HOST: "${REVERB_HOST:-reverb}"
+      REVERB_PORT: "${REVERB_PORT:-8080}"
+      REVERB_SCHEME: "${REVERB_SCHEME:-http}"
+    depends_on:
+      init-env:
+        condition: service_completed_successfully
+      init-deps:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+
+  telemetry:
+    image: fts-app:latest
+    restart: always
+    command: sh -lc "cp /runtime-env/.env .env; php artisan telemetry:start"
+    volumes:
+      - runtime-env:/runtime-env
+    environment:
+      APP_ENV: "${APP_ENV:-production}"
+      APP_DEBUG: "${APP_DEBUG:-false}"
+      APP_URL: "${APP_URL:-http://localhost:8000}"
+      BROADCAST_CONNECTION: "${BROADCAST_CONNECTION:-reverb}"
+      CACHE_STORE: "${CACHE_STORE:-redis}"
+      QUEUE_CONNECTION: "${QUEUE_CONNECTION:-sync}"
+      LOG_CHANNEL: "${LOG_CHANNEL:-stderr}"
+      REDIS_CLIENT: "${REDIS_CLIENT:-predis}"
+      REDIS_HOST: "${REDIS_HOST:-redis}"
+      REVERB_SERVER_HOST: "${REVERB_SERVER_HOST:-0.0.0.0}"
+      REVERB_SERVER_PORT: "${REVERB_SERVER_PORT:-8080}"
+      REVERB_HOST: "${REVERB_HOST:-reverb}"
+      REVERB_PORT: "${REVERB_PORT:-8080}"
+      REVERB_SCHEME: "${REVERB_SCHEME:-http}"
+    depends_on:
+      init-env:
+        condition: service_completed_successfully
+      init-deps:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+      reverb:
+        condition: service_started
+
+volumes:
+  runtime-env:

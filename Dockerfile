@@ -1,50 +1,46 @@
-FROM php:8.3-cli
+FROM phpswoole/swoole:php8.3-alpine
 
-RUN apt-get update && apt-get install -y \
-    git curl wget gnupg zip unzip \
-    libpng-dev libonig-dev libxml2-dev libzip-dev \
-    libcurl4-openssl-dev libssl-dev \
-    && docker-php-ext-install -j$(nproc) \
-        mbstring exif pcntl bcmath zip sockets curl \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache \
+    bash git curl unzip nodejs npm
 
-RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
-    && apt-get install -y nodejs && npm install -g npm@latest \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN docker-php-ext-install pcntl
 
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /app
 
 COPY composer.json composer.lock* ./
-RUN echo "APP_KEY=" > .env \
-    && composer install \
-        --no-scripts --no-autoloader \
-        --ignore-platform-reqs --no-interaction --prefer-dist
+RUN composer install \
+    --no-dev \
+    --no-scripts \
+    --no-autoloader \
+    --no-interaction \
+    --prefer-dist
 
 COPY package.json package-lock.json* ./
-RUN if [ -f package-lock.json ]; \
-    then npm ci --silent; \
-    else npm install --legacy-peer-deps --silent; \
+RUN if [ -f package-lock.json ]; then \
+      npm ci --no-audit --no-fund; \
+    else \
+      npm install --no-audit --no-fund; \
     fi
 
 COPY . .
 
-RUN composer dump-autoload --optimize \
-    && php artisan key:generate --force --no-interaction \
+RUN cp .env.example .env \
+    && rm -f bootstrap/cache/*.php \
+    && mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views storage/logs bootstrap/cache \
+    && composer dump-autoload --no-scripts --optimize --classmap-authoritative \
+    && php artisan package:discover --ansi \
     && npm run build \
-    && php artisan storage:link --no-interaction 2>/dev/null || true \
     && chmod -R 775 storage bootstrap/cache \
     && rm -f .env
 
 EXPOSE 8000
 
-CMD ["sh", "-c", "\
-    APP_KEY=$(php -r \"echo 'base64:'.base64_encode(random_bytes(32));\" ) && \
-    export APP_KEY=$APP_KEY && \
-    php artisan config:cache --no-interaction && \
-    php artisan route:cache  --no-interaction && \
-    php artisan view:cache   --no-interaction && \
-    echo '✅ Ready → http://localhost:8000' && \
-    php artisan serve --host=0.0.0.0 --port=8000 \
+CMD ["sh", "-lc", "\
+  php artisan config:clear --no-interaction || true && \
+  php artisan route:clear --no-interaction || true && \
+  php artisan view:clear --no-interaction || true && \
+  echo \"Ready -> http://localhost:${APP_SERVER_PORT:-8000}\" && \
+  exec php artisan octane:start --server=${OCTANE_SERVER:-swoole} --host=${APP_SERVER_HOST:-0.0.0.0} --port=${APP_SERVER_PORT:-8000} --workers=${OCTANE_WORKERS:-2} \
 "]

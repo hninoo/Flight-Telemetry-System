@@ -8,13 +8,13 @@ README.md
 Dockerfile
 .dockerignore
 docker-compose*.yml
-docker/
 
 vendor/
 node_modules/
 
 .env
 .env.*
+!.env.example
 
 storage/logs/*
 storage/framework/cache/*
