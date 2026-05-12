@@ -85,30 +85,8 @@ The dashboard should show all flights from the upstream API and update telemetry
 Clone the repository:
 
 ```sh
-git clone git@github.com:hninoo/test-TCP.git
-cd test-TCP
-```
-
-Create a local environment file before starting Compose:
-
-```sh
-cp .env.example .env
-```
-
-Set a unique `APP_KEY`, `REVERB_APP_ID`, `REVERB_APP_KEY`, and `REVERB_APP_SECRET` in `.env`, and set `VITE_REVERB_APP_KEY` to the same value as `REVERB_APP_KEY`. Do not enable `APP_DEBUG` outside a local reviewer stack.
-
-If port `8000` is already in use, set a different host port in `.env` before starting Compose:
-
-```env
-APP_HOST_PORT=8000
-APP_URL=http://localhost:8000
-```
-
-If port `8080` is already in use, move the Reverb host port as well:
-
-```env
-REVERB_HOST_PORT=8080
-VITE_REVERB_PORT=8080
+git clone git@github.com:hninoo/Flight-Telemetry-System.git
+cd Flight-Telemetry-System
 ```
 
 Build and start all services:
@@ -429,3 +407,5 @@ Main backend classes:
 - `.env.example` is a template only. Production deployments must provide unique `APP_KEY` and Reverb credentials through environment-specific secret management, with `APP_DEBUG=false`.
 - The telemetry daemon reads the flight list at startup. If the upstream adds or removes flights while the daemon is already running, restart the `telemetry` service to pick up the changed fleet.
 - Automated tests cover packet parsing, CRC validation, range validation, malformed packets, API proxy behavior, interval validation, broadcast sanitization, and memory-limit checks. Browser WebSocket behavior should still be verified manually before submission.
+
+
