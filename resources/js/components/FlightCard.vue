@@ -59,18 +59,24 @@ function metricValue(key: keyof NonNullable<typeof data.value>): string {
                 <span class="status-badge">{{ status }}</span>
             </div>
             <div class="head-row sub">
-                <span class="route">
-                    {{ flight.origin }}
-                    <span class="route-arrow">-&gt;</span>
-                    {{ flight.destination }}
+                <span class="detail-pair">
+                    <span class="detail-key">Route</span>
+                    <span class="route">
+                        {{ flight.origin }}
+                        <span class="route-arrow">-&gt;</span>
+                        {{ flight.destination }}
+                    </span>
                 </span>
-                <span class="model">{{ flight.model }}</span>
+                <span class="detail-pair">
+                    <span class="detail-key">Aircraft</span>
+                    <span class="model">{{ flight.model }}</span>
+                </span>
             </div>
         </header>
 
         <section class="readout">
             <dl class="metric">
-                <dt>ALT</dt>
+                <dt>Altitude</dt>
                 <dd>
                     <span class="num">{{ metricValue('altitude') }}</span>
                     <span class="unit">m</span>
@@ -78,7 +84,7 @@ function metricValue(key: keyof NonNullable<typeof data.value>): string {
             </dl>
 
             <dl class="metric">
-                <dt>SPD</dt>
+                <dt>Speed</dt>
                 <dd>
                     <span class="num">{{ metricValue('speed') }}</span>
                     <span class="unit">m/s</span>
@@ -86,7 +92,7 @@ function metricValue(key: keyof NonNullable<typeof data.value>): string {
             </dl>
 
             <dl class="metric">
-                <dt>ACC</dt>
+                <dt>Acceleration</dt>
                 <dd>
                     <span class="num">{{ metricValue('acceleration') }}</span>
                     <span class="unit">m/s2</span>
@@ -94,7 +100,7 @@ function metricValue(key: keyof NonNullable<typeof data.value>): string {
             </dl>
 
             <dl class="metric">
-                <dt>THR</dt>
+                <dt>Thrust</dt>
                 <dd>
                     <span class="num">{{ metricValue('thrust') }}</span>
                     <span class="unit">N</span>
@@ -102,7 +108,7 @@ function metricValue(key: keyof NonNullable<typeof data.value>): string {
             </dl>
 
             <dl class="metric metric-wide">
-                <dt>TEMP</dt>
+                <dt>Temperature</dt>
                 <dd>
                     <span class="num">{{ metricValue('temperature') }}</span>
                     <span class="unit">C</span>
@@ -111,10 +117,10 @@ function metricValue(key: keyof NonNullable<typeof data.value>): string {
         </section>
 
         <footer class="card-foot">
-            <span class="foot-key">PORT</span>
+            <span class="foot-key">Telemetry Port</span>
             <span class="foot-val">{{ flight.telemetryPort }}</span>
             <span class="foot-sep">/</span>
-            <span class="foot-key">UPDATED</span>
+            <span class="foot-key">Last Update</span>
             <span class="foot-val">{{ lastUpdateLabel }}</span>
         </footer>
     </article>

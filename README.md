@@ -2,7 +2,7 @@
 
 Real-time flight telemetry dashboard built with Laravel 13, PHP 8.3, Laravel Octane, Swoole, Reverb, Redis, Vue 3 and Inertia.
 
-This project was developed for the Onenex Flight Telemetry System challenge. It proxies the upstream flight list, opens one TCP connection per flight, subscribes to binary telemetry streams, validates packets, and displays live telemetry values in a WebSocket-powered dashboard.
+It proxies the upstream flight list, opens one TCP connection per flight, subscribes to binary telemetry streams, validates packets, and displays live telemetry values in a WebSocket-powered dashboard.
 
 ## Technology Choices
 
@@ -41,7 +41,7 @@ This project was developed for the Onenex Flight Telemetry System challenge. It 
 
 For Docker-based setup:
 
-- Docker Desktop, OrbStack, or Docker Engine with Docker Compose.
+- Docker Desktop or OrbStack or Docker Engine with Docker Compose.
 - Internet access to reach `fts.onenex.dev`.
 
 For non-Docker local setup:
@@ -54,16 +54,6 @@ For non-Docker local setup:
 - PHP extensions required by Laravel/Octane, including `pcntl` and `sockets`
 
 Docker is the recommended setup. No local Composer, npm, PHP, or Node setup is required when using Docker.
-
-## Demo
-
-Run the project locally and open:
-
-```text
-http://localhost:8000
-```
-
-The dashboard should show all flights from the upstream API and update telemetry values through WebSocket messages.
 
 ## Documentation
 
@@ -98,11 +88,15 @@ docker compose up -d --build
 
 During startup, the `init-deps` service also installs local `vendor/` and `node_modules/` into the project folder if they are missing. These folders are ignored by Git, but they help local IDEs resolve PHP and TypeScript dependencies.
 
-Open:
+## Demo
+
+Run the project locally and open:
 
 ```text
-http://localhost:8000/
+http://localhost:8000
 ```
+
+The dashboard should show all flights from the upstream API and update telemetry values through WebSocket messages.
 
 Check service status:
 
@@ -148,7 +142,7 @@ The `app`, `reverb`, and `telemetry` services use the same Docker image. This ke
 
 Docker Compose provides non-secret runtime defaults directly, but it reads `APP_KEY` and Reverb credentials from `.env`. Compose defaults `APP_ENV` to `production` and `APP_DEBUG` to `false` unless `.env` overrides them for local development.
 
-`.env.example` is included for local setup reference. Docker Compose reads `APP_KEY`, `REVERB_APP_ID`, `REVERB_APP_KEY`, and `REVERB_APP_SECRET` from `.env` so deploy-sensitive values are not committed in `docker-compose.yml`. Set those values before starting the services.
+`.env.example` is included for local setup reference. Docker Compose reads `APP_KEY`, `REVERB_APP_ID`, `REVERB_APP_KEY`, and `REVERB_APP_SECRET` from `.env` so deploy-sensitive values are not committed in `docker-compose.yml`.
 
 ## Console Commands
 
@@ -329,14 +323,6 @@ curl http://localhost:8000/api/flights
 docker compose exec app php artisan telemetry:probe --all --interval=5000 --packets=1 --timeout=20
 ```
 
-Manual WebSocket verification before submission:
-
-1. Open `http://localhost:8000`.
-2. Confirm five flight cards are visible.
-3. Confirm each card starts as `WAITING`.
-4. Watch each card update to `VALID`, `CORRUPTED`, `ERROR`, or `CLOSED` based on live WebSocket messages.
-5. Confirm altitude, speed, acceleration, thrust, and temperature values continue updating without refreshing the page.
-
 Frontend type check:
 
 ```sh
@@ -366,13 +352,13 @@ Laravel Octane App
     |
     | GET /api/flights
     v
-Onenex Flights API
+Flights API
 
 Telemetry Daemon
     |
     | TCP connection per flight
     v
-Onenex Telemetry Servers
+Telemetry Servers
     |
     | parsed + validated packet
     v
@@ -383,23 +369,12 @@ Laravel Event Broadcast
 Browser Dashboard
 ```
 
-Main backend classes:
-
-- `App\Console\Commands\StartTelemetry`
-- `App\Console\Commands\ProbeTelemetry`
-- `App\Services\Client`
-- `App\Services\CoroutineRunner`
-- `App\Services\PacketParser`
-- `App\Support\Crc16Ccitt`
-- `App\Support\RangeValidator`
-
 ## Assumptions
 
 - The upstream challenge host is available at `fts.onenex.dev`.
 - Flight IDs and telemetry ports come from the upstream flight list endpoint.
 - Public WebSocket channels are acceptable for this challenge dashboard.
 - `TELEMETRY_MEMORY_LIMIT_MB` defaults to `80` because Laravel + Swoole can exceed `20 MB` at baseline.
-- Docker Compose is the primary reviewer workflow.
 - `vendor/` and `node_modules/` are intentionally not committed.
 
 ## Known Limitations

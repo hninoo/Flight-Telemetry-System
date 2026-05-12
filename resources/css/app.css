@@ -378,8 +378,23 @@ main {
 }
 
 .head-row.sub {
+    flex-wrap: wrap;
     font-size: 0.75rem;
     color: var(--text-dim);
+}
+
+.detail-pair {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    min-width: 0;
+}
+
+.detail-key {
+    color: var(--accent-dim);
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
 }
 
 .route {
@@ -422,8 +437,9 @@ main {
 .metric dt {
     font-size: 0.65rem;
     font-weight: 500;
-    letter-spacing: 0.18em;
+    letter-spacing: 0.08em;
     color: var(--muted);
+    text-transform: uppercase;
 }
 
 .metric dd {
@@ -453,9 +469,10 @@ main {
 .card-foot {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 0.4rem;
     font-size: 0.65rem;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.06em;
     color: var(--muted);
     padding-top: 0.5rem;
     border-top: 1px dashed var(--border);
@@ -463,6 +480,8 @@ main {
 
 .foot-key {
     color: var(--accent-dim);
+    font-weight: 600;
+    text-transform: uppercase;
 }
 
 .foot-val {
